@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+html, body { height: 100%; }
+body { background: #0b0f17; color: #e8ecf3; -webkit-tap-highlight-color: transparent; }
+
+/* Tom Select dark theme. Every selector starts with `body` so it beats Tom Select's own light theme
+   no matter which stylesheet the bundler loads last. */
+body .ts-wrapper { width: 100%; }
+body .ts-wrapper.single .ts-control,
+body .ts-wrapper.single.input-active .ts-control,
+body .ts-wrapper.single.focus .ts-control,
+body .ts-wrapper.single.dropdown-active .ts-control {
+  background: rgb(255 255 255 / 0.1); background-image: none; color: #e8ecf3;
+  border: 0; border-radius: 0.75rem; padding: 0.75rem; box-shadow: none; font-size: 16px;
+}
+body .ts-control .item, body .ts-control input, body .ts-wrapper.single .ts-control > * { color: #e8ecf3; }
+body .ts-control input::placeholder { color: #9aa4b5; }
+body .ts-wrapper.single .ts-control:after { border-color: #9aa4b5 transparent transparent; }
+body .ts-wrapper.single.dropdown-active .ts-control:after { border-color: transparent transparent #9aa4b5; }
+body .ts-dropdown {
+  background: #151b27; color: #e8ecf3; border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 0.75rem; overflow: hidden; z-index: 50; box-shadow: 0 10px 30px rgb(0 0 0 / 0.5);
+}
+body .ts-dropdown .ts-dropdown-content { background: #151b27; }
+body .ts-dropdown .dropdown-input-wrap { background: #151b27; padding: 0.5rem; }
+body .ts-dropdown .dropdown-input {
+  background: rgb(255 255 255 / 0.08); color: #e8ecf3; border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 16px;
+}
+body .ts-dropdown .option { color: #e8ecf3; padding: 0.65rem 0.75rem; }
+body .ts-dropdown .selected { background: rgb(79 124 255 / 0.18); color: #fff; }
+body .ts-dropdown .active, body .ts-dropdown .active.selected { background: #2a56d6; color: #fff; }
+body .ts-dropdown .no-results { padding: 0.65rem 0.75rem; color: #9aa4b5; }
+body .ts-dropdown .highlight { background: rgb(255 214 10 / 0.35); color: inherit; }
