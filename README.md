@@ -10,9 +10,11 @@ Built as an internal company tool: login is required and every user only sees th
 - **AI extraction** of name, title, company, email, phone, mobile, website, address, city, country, LinkedIn and notes. Providers: **Google Gemini** or **Anthropic Claude** (switch with `AI_PROVIDER`).
 - **International phone numbers**: the AI adds the dial code when the card doesn't print one, and flags it so you can double-check.
 - **Country dropdown** (searchable). The AI's country is matched to the list in `lib/countries.ts`; the list's 2-letter code is what HubSpot receives.
-- **Review and edit** every field before syncing.
+- **Details page** right after a scan: every field is editable, with a **Rescan** option to read the card again (replaces the result), plus Save, Add to contacts and Push to HubSpot.
 - **HubSpot sync**: creates or updates the contact (matched by email), finds or creates the company, links them, and adds the contact to a chosen **campaign**. Sets an "Added by" property to `Cardimus - First Last`.
 - **Nothing is lost**: every scan is stored in SQLite on the server the moment the AI answers. Failed syncs stay in the **Unsynced Contacts** panel with the error, and unsynced contacts can't be deleted.
+- **English and Turkish UI** with an EN/TR switch in the header (defaults to the browser language). Add a language by extending `lib/i18n.ts`.
+- **Several emails on a card**: all are kept and you pick the one to send to the CRM. Sync errors are shown as friendly messages; users only ever see the word "CRM".
 - **Export** to the phone's contacts as a vCard (`.vcf`).
 - **Accounts**: register/login with name, surname, email and password (scrypt-hashed). Sessions last 400 days and renew while in use.
 - Installable as a PWA (needs HTTPS).
@@ -53,7 +55,6 @@ Set these in `.env.local` (development) or in your host's environment settings (
 | `DATABASE_PATH` | SQLite file location (default `data/cardimus.db`) |
 | `COOKIE_SECURE` | Set `0` only to run production over plain HTTP |
 | `DEV_ORIGINS` | Comma-separated LAN IPs allowed to load the dev server |
-| `NEXT_PUBLIC_DEBUG_SCAN` | Build-time. `1` shows the raw AI output after a scan; on by default in dev, off in production |
 
 ## HubSpot setup
 
@@ -86,6 +87,8 @@ app/
     auth            login, register, logout
 components/         UI (Tom Select dropdowns, contact form, unsynced panel)
 lib/
+  i18n.ts, crm.ts, emails.ts         translations, friendly CRM errors, email parsing
+  scan.ts                            photo -> AI -> stored card (also used for rescan)
   claude.ts, gemini.ts, extract.ts   AI providers and the shared prompt
   countries.ts                       country list + matching
   hubspot.ts                         HubSpot contact/company/campaign calls

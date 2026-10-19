@@ -1,7 +1,9 @@
 "use client";
 import { useRef } from "react";
+import { useT } from "./LangProvider";
 
 export function CaptureButtons({ onFile, disabled }: { onFile: (f: File) => void; disabled?: boolean }) {
+  const { t } = useT();
   const camera = useRef<HTMLInputElement>(null);
   const gallery = useRef<HTMLInputElement>(null);
 
@@ -20,14 +22,14 @@ export function CaptureButtons({ onFile, disabled }: { onFile: (f: File) => void
         onClick={() => camera.current?.click()}
         className="rounded-2xl bg-blue-600 py-5 text-lg font-semibold active:bg-blue-700 disabled:opacity-50"
       >
-        📷 Take photo
+        {t("scan.takePhoto")}
       </button>
       <button
         disabled={disabled}
         onClick={() => gallery.current?.click()}
         className="rounded-2xl bg-white/10 py-4 text-base font-medium active:bg-white/20 disabled:opacity-50"
       >
-        🖼️ Choose from gallery
+        {t("scan.gallery")}
       </button>
     </div>
   );

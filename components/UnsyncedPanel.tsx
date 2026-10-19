@@ -1,13 +1,16 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { listCards, syncCard } from "@/lib/storage";
+import { useT } from "./LangProvider";
+import { translateServerMessage } from "@/lib/i18n";
 import type { SavedCard } from "@/lib/schema";
 
-const nameOf = (c: SavedCard) =>
-  [c.contact.firstName, c.contact.lastName].filter(Boolean).join(" ") || c.contact.company || "Unnamed";
+const nameOf = (c: SavedCard, unnamed: string) =>
+  [c.contact.firstName, c.contact.lastName].filter(Boolean).join(" ") || c.contact.company || unnamed;
 
 /** Lists cached contacts that haven't been pushed to HubSpot yet, with per-card and bulk sync. */
 export function UnsyncedPanel({ refreshKey, campaignId }: { refreshKey: number; campaignId: string }) {
+  const { t, lang } = useT();
   const [cards, setCards] = useState<SavedCard[]>([]);
   const [syncing, setSyncing] = useState<Set<string>>(new Set());
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,13 +50,13 @@ export function UnsyncedPanel({ refreshKey, campaignId }: { refreshKey: number; 
   return (
     <section className="rounded-xl bg-white/5 p-3">
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="font-semibold">Unsynced Contacts ({cards.length})</h2>
+        <h2 className="font-semibold">{t("unsynced.title", { n: cards.length })}</h2>
         <button
           onClick={syncAll}
           disabled={syncing.size > 0}
           className="rounded-lg bg-orange-500/90 px-3 py-1.5 text-sm font-medium disabled:opacity-50"
         >
-          Sync all
+          {t("unsynced.syncAll")}
         </button>
       </div>
       <ul className="flex flex-col gap-2">
@@ -61,10 +64,10 @@ export function UnsyncedPanel({ refreshKey, campaignId }: { refreshKey: number; 
           <li key={c.id} className="rounded-lg bg-black/30 p-2">
             <div className="flex items-center gap-2">
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">{nameOf(c)}</span>
+                <span className="block truncate text-sm font-medium">{nameOf(c, t("unsynced.unnamed"))}</span>
                 <span className="block truncate text-xs text-white/50">
                   {[c.contact.title, c.contact.company, c.contact.email].filter(Boolean).join(" · ")}
-                  {c.contact.dialCodeInferred ? " · ⚠️ dial code guessed" : ""}
+                  {c.contact.dialCodeInferred ? ` · ${t("unsynced.dialGuessed")}` : ""}
                 </span>
               </span>
               <button
@@ -72,11 +75,11 @@ export function UnsyncedPanel({ refreshKey, campaignId }: { refreshKey: number; 
                 disabled={syncing.has(c.id)}
                 className="rounded-lg bg-white/10 px-3 py-1.5 text-sm disabled:opacity-50"
               >
-                {syncing.has(c.id) ? "Syncing…" : "Sync"}
+                {syncing.has(c.id) ? t("unsynced.syncing") : t("unsynced.sync")}
               </button>
             </div>
             {(errors[c.id] || c.syncError) && (
-              <p className="mt-1 break-words text-xs text-red-300">Last sync failed: {errors[c.id] || c.syncError}</p>
+              <p className="mt-1 break-words text-xs text-red-300">{t("unsynced.failed", { e: translateServerMessage(errors[c.id] || c.syncError || "", lang) })}</p>
             )}
           </li>
         ))}

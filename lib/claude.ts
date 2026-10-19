@@ -7,6 +7,7 @@ export const PROMPT = `Extract the contact details printed on this business card
 - Copy text exactly as printed, preserving spelling and diacritics.
 - Split the person's name into firstName and lastName.
 - Use null for anything not printed on the card. Never guess or invent values.
+- List every email address printed on the card in "emails". Put exactly ONE address in "email" (never several): prefer the named person's own address over generic ones like info@ or sales@, otherwise the first.
 - Write every phone/mobile number in international format: "+<dial code> <number>" (for example +90 212 555 01 23).
   - If the card already prints a dial code, keep it.
   - If it does not, work out the country from the card (printed country, city, address, postal code, website domain such as .com.tr / .de, or the company's known home country) and add that country's dial code. Drop a local leading trunk "0" when you add the code (0212 555 01 23 in Turkey becomes +90 212 555 01 23).

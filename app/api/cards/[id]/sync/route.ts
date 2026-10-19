@@ -1,6 +1,7 @@
 import { authed } from "@/lib/guard";
 import { getCard, markSyncFailed, markSynced } from "@/lib/cards";
 import { pushToHubSpot } from "@/lib/hubspot";
+import { CRM_MSG, CrmError } from "@/lib/crm";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -19,9 +20,9 @@ export async function POST(req: Request, { params }: Ctx) {
     markSynced(a.user.id, id, r.contactId);
     return Response.json(r);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "HubSpot error";
+    const message = err instanceof CrmError ? err.message : CRM_MSG.rejected; // never expose raw errors
     markSyncFailed(a.user.id, id, message); // card stays saved; retry any time
-    console.error("hubspot sync failed:", message.slice(0, 120));
+    if (!(err instanceof CrmError)) console.error("crm sync failed:", err instanceof Error ? err.name : "unknown");
     return Response.json({ error: message }, { status: 502 });
   }
 }

@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
+import { cookies, headers } from "next/headers";
 import "./globals.css";
 import { RegisterSW } from "@/components/RegisterSW";
+import { LangProvider } from "@/components/LangProvider";
+import { Header } from "@/components/Header";
+import { LANG_COOKIE, LANGS, detectLang, type Lang } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Cardimus",
@@ -16,15 +19,17 @@ export const viewport: Viewport = {
   themeColor: "#0b0f17",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Saved choice wins; otherwise follow the browser language (Turkish if it asks for it).
+  const saved = (await cookies()).get(LANG_COOKIE)?.value as Lang | undefined;
+  const lang: Lang = saved && LANGS.includes(saved) ? saved : detectLang((await headers()).get("accept-language"));
   return (
-    <html lang="en">
+    <html lang={lang}>
       <body className="mx-auto flex min-h-dvh max-w-md flex-col px-4 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
-        <header className="flex items-center justify-between py-4">
-          <Link href="/" className="text-lg font-semibold tracking-tight">Cardimus</Link>
-          <Link href="/history" className="text-sm text-blue-400">History</Link>
-        </header>
-        <main className="flex flex-1 flex-col pb-6">{children}</main>
+        <LangProvider initial={lang}>
+          <Header />
+          <main className="flex flex-1 flex-col pb-6">{children}</main>
+        </LangProvider>
         <RegisterSW />
       </body>
     </html>

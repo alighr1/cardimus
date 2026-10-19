@@ -18,7 +18,7 @@ export async function DELETE(req: Request, { params }: Ctx) {
   if ("res" in a) return a.res;
   const result = deleteSyncedCard(a.user.id, (await params).id);
   if (result === "unsynced") {
-    return Response.json({ error: "This contact isn't synced to HubSpot yet, so it can't be deleted." }, { status: 409 });
+    return Response.json({ error: "This contact isn't synced to the CRM yet, so it can't be deleted." }, { status: 409 });
   }
   return result === "deleted" ? Response.json({ ok: true }) : Response.json({ error: "Not found" }, { status: 404 });
 }

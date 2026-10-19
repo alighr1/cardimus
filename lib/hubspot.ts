@@ -1,5 +1,7 @@
 import type { Contact } from "./schema";
 import { countryForHubSpot } from "./countries";
+import { CRM_MSG, CrmError, friendlyCrmError } from "./crm";
+import { splitEmails } from "./emails";
 
 const BASE = "https://api.hubapi.com";
 
@@ -13,10 +15,9 @@ async function hs<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.text();
-    if (body.includes("PROPERTY_DOESNT_EXIST")) {
-      throw new Error(`HubSpot has no contact property "${ADDED_BY_PROPERTY}". Create the "Added by" property first (see setup steps).`);
-    }
-    throw new Error(`HubSpot ${res.status}: ${body.slice(0, 200)}`);
+    // Log only the status and error codes (the body can contain personal data); users get a friendly message.
+    console.error("crm request failed:", res.status, [...new Set(body.match(/[A-Z]{4,}(?:_[A-Z]+)+/g) ?? [])].join(","));
+    throw new CrmError(friendlyCrmError(res.status, body));
   }
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
 }
@@ -67,13 +68,14 @@ export async function listCampaigns(): Promise<Campaign[]> {
 export const ADDED_BY_PROPERTY = process.env.HUBSPOT_ADDED_BY_PROPERTY ?? "added_by";
 
 export async function pushToHubSpot(c: Contact, campaignId?: string, addedBy?: string) {
-  if (!process.env.HUBSPOT_TOKEN) throw new Error("HUBSPOT_TOKEN is not configured");
+  if (!process.env.HUBSPOT_TOKEN) throw new CrmError(CRM_MSG.notConfigured);
+  const email = splitEmails(c.email)[0] ?? null; // the CRM accepts exactly one address
 
   const contactProps = clean({
     firstname: c.firstName,
     lastname: c.lastName,
     jobtitle: c.title,
-    email: c.email,
+    email,
     phone: c.phone,
     mobilephone: c.mobile,
     website: c.website,
@@ -86,7 +88,7 @@ export async function pushToHubSpot(c: Contact, campaignId?: string, addedBy?: s
 
   // Upsert contact by email (when there is one)
   let contactId: string | undefined;
-  if (c.email) contactId = (await search("contacts", "email", c.email)).results[0]?.id;
+  if (email) contactId = (await search("contacts", "email", email)).results[0]?.id;
   if (contactId) {
     await hs(`/crm/v3/objects/contacts/${contactId}`, {
       method: "PATCH",

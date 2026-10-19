@@ -1,8 +1,6 @@
-export class ApiError extends Error {
-  constructor(message: string, public debug?: unknown) {
-    super(message);
-  }
-}
+import { translateServerMessage } from "./i18n";
+
+export class ApiError extends Error {}
 
 async function requestJson<T>(url: string, body?: unknown, method?: string): Promise<T> {
   const res = await fetch(url, {
@@ -12,10 +10,10 @@ async function requestJson<T>(url: string, body?: unknown, method?: string): Pro
   });
   if (res.status === 401) {
     window.location.href = "/login"; // session expired
-    throw new ApiError("Please log in.");
+    throw new ApiError(translateServerMessage("Please log in."));
   }
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(data.error ?? `Request failed (${res.status})`, data.debug);
+  if (!res.ok) throw new ApiError(translateServerMessage(data.error ?? `Request failed (${res.status})`));
   return data as T;
 }
 
